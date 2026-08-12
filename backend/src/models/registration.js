@@ -21,6 +21,9 @@ import mongoose from "mongoose";
  },
 {timestamps:true})
 
+// 1---> ascending order of sorting, uniqueness
+// no duplicate combination of student and event, no double registration
+
 registrationSchema.index({ event: 1, student: 1 }, { unique: true })
 const registrationModel=mongoose.model("Registration",registrationSchema)
 export default registrationModel
