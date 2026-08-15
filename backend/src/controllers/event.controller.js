@@ -74,3 +74,34 @@ export async function updateEvent(req,res) {
     }
 
 }
+
+export async function deleteEvent(req,res) {
+    try{
+        const event=await eventModel.findById(req.params.id)
+        if(!event) return res.status(404).json({message:"Event not found"})
+        if(event.organizer.toString()!==req.user.id){
+            return res.status(403).json({message:"You dont own this event"})
+        }
+        await event.deleteOne()
+        await registrationModel.deleteMany({event:event._id})
+        res.json({message:"Event deleted"})
+
+    }catch(err){
+        return res.status(500).json({message:"failed to delete event"})
+    }
+}
+
+export async function getRegistrations(req,res) {
+    try{
+        const event=await eventModel.findById(req.params.id)
+        if(!event) return res.status(404).json({message:"event not found"})
+        if(event.organizer.toString()!==req.user.id){
+            return res.status(403).json({message:"you dont own this event"})
+        }
+
+        const regs=await registrationModel.find({event:event.__id}).populate("student","name email")
+        res.json(regs)
+    }catch(err){
+        return res.status(500).json({message:"failed to fech registrations"})
+    }
+}
