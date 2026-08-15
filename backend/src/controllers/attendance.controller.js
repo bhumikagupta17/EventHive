@@ -27,7 +27,7 @@ export async function exportAttendance(req,res) {
 
         res.header("content-type","text/csv")
 
-        res.attatchment(`${event.title.replace(/\s+/g,"_")}_attendance.csv`)
+        res.attachment(`${event.title.replace(/\s+/g,"_")}_attendance.csv`)
         res.send(csv)
     }catch(err){
         res.status(500).json({message:"Falied to export attendance"})
