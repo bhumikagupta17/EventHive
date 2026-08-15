@@ -10,14 +10,8 @@ import mongoose from "mongoose";
         ref:"User",
         required:true
     },
-    checkedIn:{
-        type:Boolean,
-        default:false
-    },
-    checkedInAt:{
-        type:Date,
-        default:null
-    }
+   ticketType: { type: String, default: "General" },
+    status: { type: String, enum: ["Pending", "Checked In"], default: "Pending" }
  },
 {timestamps:true})
 

@@ -21,6 +21,14 @@ const eventSchema=new mongoose.Schema({
         type:Date,
         required:true
     },
+    dateDisplay:{
+        type:String,
+        required:true
+    },
+    bannerUrl:{
+        type:String,
+        default:""
+    },
     category: { 
         type: String, 
         default: "General" 
@@ -33,7 +41,11 @@ const eventSchema=new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId, 
         ref: "User", 
         required: true 
-    }
+    },
+    price: { type: String, default: "Free" },
+    isFree: { type: Boolean, default: true },
+    organizerName: { type: String, required: true },
+    organizerEmail: { type: String, default: "" },
 },{
     timestamps:true
 })
