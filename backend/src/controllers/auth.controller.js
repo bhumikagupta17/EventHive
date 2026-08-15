@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs"
 import jwt from "jsonwebtoken"
-import userModel from "../models/user.js";
+import userModel from "../models/user.model.js";
 
 function signToken(user) {
     return jwt.sign(

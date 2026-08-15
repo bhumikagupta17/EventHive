@@ -2,8 +2,8 @@ import dotenv from "dotenv"
 dotenv.config()
 import connectDB from "./src/db/db.js"
 import app from "./src/app.js"
-import authRoutes from "./src/routes/auth.js"
-import eventRoutes from "./src/routes/events.js"
+import authRoutes from "./src/routes/auth.routes.js"
+import eventRoutes from "./src/routes/events.routes.js"
 connectDB()
 
 app.get("/api/health",(req,res)=> res.json({status:"ok"}))

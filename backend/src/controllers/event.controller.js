@@ -1,5 +1,5 @@
-import registrationModel from "../models/registration.js"
-import eventModel from "../models/event.js"
+import registrationModel from "../models/registration.model.js"
+import eventModel from "../models/event.model.js"
 
 export async function getAllEvents(req,res) {
     try{
@@ -57,3 +57,20 @@ export async function postEvent(req,res) {
     
 }
 
+export async function updateEvent(req,res) {
+    try{const event=eventModel.findById(req.params.id)
+
+    if(!event){
+        return res.status(404).json({message:"Event not found"})
+    }
+    if(event.organizer.toString()!== req.user.id){
+        return res.status(403).json({message:"You dont own this event"})
+    }
+    Object.assign(event,req.body)
+    await event.save()
+    res.json(event)
+    }catch(err){
+        res.status(500).json({message:"Failed to update event"})
+    }
+
+}
