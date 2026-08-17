@@ -59,4 +59,16 @@ async function login(req,res){
     }
 }
 
-export default {login,signup}
+async function getMe(req,res) {
+    const header=req.headers.authorizaton
+    if(!header?.startsWith("Bearer ")) return res.status(401).json({message:"no token"})
+    try{
+        const decoded=jwt.verify(header.split(" ")[1],process.env.JWT_SECRET)
+        res.json({user:{id:decoded.id,name:decoded.name,role:decoded.role}})
+    }catch(err){
+        res.status(401).json({message:"invalid or expired token"})
+    }
+    
+}
+
+export default {login,signup,getMe}
