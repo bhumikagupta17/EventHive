@@ -9,11 +9,7 @@ const eventSchema=new mongoose.Schema({
         type:String,
         default:""
     },
-    club:{
-        type:String,
-        required:true
-    },
-    venue:{
+    location:{
         type:String,
         required:true
     },
@@ -46,6 +42,7 @@ const eventSchema=new mongoose.Schema({
     isFree: { type: Boolean, default: true },
     organizerName: { type: String, required: true },
     organizerEmail: { type: String, default: "" },
+    organizer: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true }
 },{
     timestamps:true
 })

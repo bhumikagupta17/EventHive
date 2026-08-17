@@ -22,3 +22,15 @@ export function requireRole(...roles){
         next()
     }
 }
+
+export function attachUserIfPresent(req, res, next) {
+  const header = req.headers.authorization;
+  if (header?.startsWith("Bearer ")) {
+    try {
+      req.user = jwt.verify(header.split(" ")[1], process.env.JWT_SECRET);
+    } catch {
+      // invalid/expired token — just treat as anonymous, don't block the request
+    }
+  }
+  next();
+}
