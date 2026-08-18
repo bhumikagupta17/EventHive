@@ -3,24 +3,22 @@ import eventModel from "../models/event.model.js"
 
 export async function getAllEvents(req,res) {
     try{
-        const {search,category,club,from,to,page=1,limit=12}=req.query
+        const {search,category}=req.query
         const query={}
 
         if(search) query.$text={$search:search}
-        if(category) query.category=category
-        if(club) query.club=club
-        if(from || to){
-            query.date={}
-            if(from) query.date.$gte=new Date(from)
-            if(to) query.date.$lte=new Date(to)
-        }
+        if(category && category !== "All categories") query.category=category
         
-        const skip=(Number(page)-1)*Number(limit)
-        const [events,total]=await Promise.all([
-            eventModel.find(query).sort({date:1}).skip(skip).limit(Number(limit)).populate("organizer", "name club"),
-            eventModel.countDocuments(query)
-        ])
-        res.json({events,total,page:Number(page),pages: Math.ceil(total / Number(limit))})
+        const events=await eventModel.find(query).sort({date:1}).populate("organizer","name email")
+        const shaped=await Promise.all(
+            events.map(async (ev)=>{
+                const isOwner=req.user && ev.organizer._id.toString()===req.user.id
+                if(!isOwner) return ev.toObject();
+                const attendeesCount=await registrationModel.countDocuments({event:ev._id})
+                return{...ev.toObject(),attendeesCount}
+            })
+        )
+        res.json(shaped)
     }catch(err){
         res.status(500).json({message:"Failed to fetch events"})
     }
@@ -31,8 +29,15 @@ export async function getEventById(req,res) {
         const event= await eventModel.findById(req.params.id).populate("organizer","name club")
         if(!event) return res.status(404).json({message:"Event not Found"})
         const isRegistrationOpen=new Date()<new Date(event.date)
+        const isOwner=req.user && event.organizer._id.toString()===req.user._id
+        if(!isOwner) {
+            return res.status({...event.toObject(),isRegistrationOpen})
+        }
+        const attendeesCount=await registrationModel.countDocuments({event:event._id})
+
     res.json({
         ...event.toObject(),
+        attendeesCount,
         isRegistrationOpen
     })
     }catch(err){
@@ -42,13 +47,17 @@ export async function getEventById(req,res) {
 
 export async function postEvent(req,res) {
     try{
-        const {title,club,description,venue,date,imageUrl,category}=req.body
-    if(!title || !venue || !date) {
-        return res.status(400).json({message:"title,venue,date are required"})
+        const {title, description, category, location, date, dateDisplay,
+      bannerUrl, maxCapacity, price, isFree, organizerName, organizerEmail,}=req.body
+    if(!title || !location || !date) {
+        return res.status(400).json({message:"title,location,date are required"})
     }   
     const event=await eventModel.create({
-        title,description,club,venue,date,category,imageUrl,
-        organizer:req.user.id
+       title, description, category, location, date, dateDisplay,
+      bannerUrl, maxCapacity, price, isFree,
+      organizerName: organizerName || req.user.name,
+      organizerEmail: organizerEmail || "",
+      organizer: req.user.id,
     })
     res.status(200).json(event)
     }catch(err){
@@ -100,8 +109,31 @@ export async function getRegistrations(req,res) {
         }
 
         const regs=await registrationModel.find({event:event.__id}).populate("student","name email")
-        res.json(regs)
+        const attendeesCount=regs.map((r)=>({
+            id: r._id,
+            name: r.student.name,
+            email: r.student.email,
+            ticketType: r.ticketType,
+            status: r.status,
+            registeredAt: r.createdAt,
+        }))
+        res.json(attendeesCount)
     }catch(err){
         return res.status(500).json({message:"failed to fech registrations"})
+    }
+}
+
+export async function organizerEvent(req,res) {
+    try{
+        const events=(await eventModel.find({organizer:req.user.is})).toSorted({date:1})
+        const withCounts=await Promise.all(
+            events.map(async(ev)=>{
+                const attendeesCount=await registrationModel.countDocuments({event:ev._id})
+                return{...ev.toObject(),attendeesCount}
+            })
+        )
+        res.json(withCounts)
+    }catch(err){
+        res.status(500).json({message:"Failed to fetch your events"})
     }
 }

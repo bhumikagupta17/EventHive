@@ -29,15 +29,6 @@ const eventSchema=new mongoose.Schema({
         type: String, 
         default: "General" 
     },
-    imageUrl: { 
-        type: String, 
-        default: "" 
-    },
-    organizer: { 
-        type: mongoose.Schema.Types.ObjectId, 
-        ref: "User", 
-        required: true 
-    },
     price: { type: String, default: "Free" },
     isFree: { type: Boolean, default: true },
     organizerName: { type: String, required: true },
