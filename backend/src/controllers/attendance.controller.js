@@ -17,12 +17,12 @@ export async function exportAttendance(req,res) {
             return{
             name:r.student.name,
             email: r.student.email,
+            ticketType:r.ticketType,
+            status:r.status,
             registeredAt: r.createdAt.toISOString(),
-            checkedIn: r.checkedIn?"yes":"no",
-            checkedInAt: r.checkedInAt? r.checkedInAt.toISOString():""
             }
         })
-        const parser=new Parser({fields:["name","email","registeredAt","checkedIn","checkedInAt"]})
+        const parser=new Parser({fields:["name","email","ticketType", "status", "registeredAt"]})
         const csv=parser.parse(rows)
 
         res.header("content-type","text/csv")
