@@ -13,6 +13,7 @@ app.use("/api/auth",authRoutes)
 app.use("/api/events",eventRoutes)
 app.use("/api/registrations",registrationRoutes)
 app.use("/api/attendance",attendanceRoutes)
+app.use((req,res)=>res.status(404).json({message:"Not Found"}))
 
 app.listen(process.env.PORT || 3000,()=>{
     console.log(`Server connected on port ${process.env.PORT || 5000}`)
