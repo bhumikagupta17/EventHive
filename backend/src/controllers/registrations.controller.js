@@ -1,8 +1,10 @@
 import registrationModel from "../models/registration.model";
 import eventModel from "../models/event.model";
+import { populate } from "dotenv";
 
 export async function registerForEvent(req,res) {
-    try{const {eventId}=req.body
+    try{
+        const {eventId,ticketType}=req.body
     const event=await eventModel.findById(eventId)
     if(!event) return res.status(404).json({message:"event not found"})
     
@@ -11,10 +13,13 @@ export async function registerForEvent(req,res) {
 
     const reg=await registrationModel.create({
         event:eventId,
-        student:req.user.id
+        student:req.user.id,
+        ticketType:ticketType||"General"
     })
 
-    res.status(201).json(reg)
+    const populated=await reg.populate("event")
+
+    res.status(201).json(populate)
     }catch(err){
         if(err.code===11000) return res.status(409).json({message:"already registered"})
         res.status(500).json({message:"Failed to register for event"})
@@ -51,14 +56,13 @@ export async function markCheckedIn(req,res) {
         const reg=await registrationModel.findById(req.params.id).populate("event")
         if(!reg) return res.status(401).json({message:"registration not found"})
         
-            if(reg.event.organizer.toString()!==req.user.id){
-                return res.status(403).json({message:"you dont own this event"})
-            }
+        if(reg.event.organizer.toString()!==req.user.id){
+            return res.status(403).json({message:"you dont own this event"})
+        }
+        reg.status=reg.status==="Checked In"?"Pending":"Checked In"
 
-            reg.checkedIn=true
-            reg.checkedInAt=Date.now()
-
-            await reg.save()
+        await reg.save()
+        res.json(reg)
     }catch(err){
         res.status(500).json({message:"Check-in failed"})
     }
