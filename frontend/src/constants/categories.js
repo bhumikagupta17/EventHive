@@ -5,7 +5,6 @@ export const EVENT_CATEGORIES = [
   'Workshop',
   'Regional',
   'Social',
-  'Academic'
 ]
 
 export const CATEGORY_FILTER_OPTIONS = [
