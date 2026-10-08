@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import api from '../../api/client';
 
 export function useRegistrationsState({user,showToast,refreshEvents}){
@@ -20,7 +20,7 @@ export function useRegistrationsState({user,showToast,refreshEvents}){
                 registeredAt: r.createdAt,
             })))
         } catch (error) {
-            showToast(err.response?.data?.message || 'Failed to fetch registrations')
+            showToast(error.response?.data?.message || 'Failed to fetch registrations')
         }
     },[user])
 
@@ -45,7 +45,7 @@ export function useRegistrationsState({user,showToast,refreshEvents}){
             await api.delete(`/registrations/${registrationId}`)
             await refreshMyRegistrations()
             await refreshEvents()
-            if (target) showToast(`Registration for ${target.eventTitle}cancelled`)
+            if (target) showToast(`Registration for ${target.eventTitle} cancelled`)
 
         } catch (err) {
             showToast(err.response?.data?.message || 'Failed to cancel registration')

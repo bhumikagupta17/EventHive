@@ -1,6 +1,6 @@
 import express from "express"
 import {registerForEvent,deleteRegisteration,markCheckedIn,getHistory} from "../controllers/registrations.controller.js"
-import { requireAuth,requireRole } from "../middleware/auth.middleware"
+import { requireAuth,requireRole } from "../middleware/auth.middleware.js"
 const router=express.Router()
 
 router.post("/",requireAuth,requireRole("student"),registerForEvent)

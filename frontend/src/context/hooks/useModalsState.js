@@ -2,7 +2,7 @@ import { useState } from 'react';
 
 // Every modal's open/closed state and its open/close helpers.
 // Pure UI state — no API calls live here.
-export function useModalsState() {
+export function useModalState() {
   const [registerModalEvent, setRegisterModalEvent] = useState(null);
   const [createEventModalOpen, setCreateEventModalOpen] = useState(false);
   const [addGuestModalEventId, setAddGuestModalEventId] = useState(null);

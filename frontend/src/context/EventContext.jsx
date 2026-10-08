@@ -9,7 +9,7 @@ const EventContext=createContext(undefined)
 
 export const EventProvider=({children})=>{
     const toast = useToastState();
-    const modals = useModalsState();
+    const modals = useModalState();
     const eventsState = useEventsState({ showToast: toast.showToast });
     const auth = useAuthState({
         showToast: toast.showToast,

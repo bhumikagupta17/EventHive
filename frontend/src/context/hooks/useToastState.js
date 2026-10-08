@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-export function useToasteState(){
+export function useToastState(){
      const [toastMessage,setToastMessage]=useState(null)
 
      const showToast=(msg)=>{

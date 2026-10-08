@@ -1,10 +1,10 @@
 import { Parser } from "json2csv";
-import eventModel from "../models/event.model";
-import registrationModel from "../models/registration.model";
+import eventModel from "../models/event.model.js";
+import registrationModel from "../models/registration.model.js";
 
 export async function exportAttendance(req,res) {
     try{
-        const event=await eventModel.findById(req.params.id)
+        const event=await eventModel.findById(req.params.eventId)
         if(!event) return res.status(404).json({message:"event not found"})
         
         if(event.organizer.toString()!==req.user.id){

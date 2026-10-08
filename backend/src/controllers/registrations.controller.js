@@ -1,6 +1,5 @@
-import registrationModel from "../models/registration.model";
-import eventModel from "../models/event.model";
-import { populate } from "dotenv";
+import registrationModel from "../models/registration.model.js";
+import eventModel from "../models/event.model.js";
 
 export async function registerForEvent(req,res) {
     try{
@@ -19,7 +18,7 @@ export async function registerForEvent(req,res) {
 
     const populated=await reg.populate("event")
 
-    res.status(201).json(populate)
+    res.status(201).json(populated)
     }catch(err){
         if(err.code===11000) return res.status(409).json({message:"already registered"})
         res.status(500).json({message:"Failed to register for event"})
@@ -27,7 +26,7 @@ export async function registerForEvent(req,res) {
 }
 
 export async function deleteRegisteration(req,res) {
-    try{const reg=registrationModel.findById(req.params.id)
+    try{const reg=await registrationModel.findById(req.params.id)
     if(!reg) return res.status(401).json({message:"registration not found"})
         
     if(reg.student.toString()!==req.user.id){

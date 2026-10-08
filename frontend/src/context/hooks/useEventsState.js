@@ -15,16 +15,16 @@ export function useEventsState({showToast}){
             e.preventDefault()
             e.stopPropagation()
         }
-        setEvents((prev)=>{
-            prev.map((e)=>{
-                if(e.id===eventId){
-                    const next=!e.bookmarked
+        setEvents((prev)=>
+            prev.map((ev)=>{
+                if(ev.id===eventId){
+                    const next=!ev.bookmarked
                     showToast(next ? `Saved "${ev.title}" to bookmarks` : `Removed "${ev.title}" from bookmarks`);
                     return { ...ev, bookmarked: next };
                 }
-                return e
+                return ev
             })
-        })
+        )
     }
     const createEvent = async (newEvent) => {
     try {
@@ -61,7 +61,7 @@ export function useEventsState({showToast}){
         const ev = events.find((e) => e.id === eventId)
         if (!ev || !window.confirm(`Are you sure you want to delete "${ev.title}"?`)) return
         try {
-            await api.delete('/events/${eventId}')
+            await api.delete(`/events/${eventId}`)
             await refreshEvents()
             showToast("Event deleted Succesfully")
         } catch (err) {
