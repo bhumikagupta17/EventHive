@@ -15,7 +15,7 @@ router.put("/:id",requireAuth,requireRole("organizer"),updateEvent)
 
 router.delete("/:id",requireAuth,requireRole("organizer"),deleteEvent)
 
-router.get("/:id",requireAuth,requireRole("organizer"),getRegistrations)
+router.get("/:id/registrations",requireAuth,requireRole("organizer"),getRegistrations)
 
 router.get("/mine/list",requireAuth,requireRole("organizer"),organizerEvent)
 

@@ -60,7 +60,7 @@ async function login(req,res){
 }
 
 async function getMe(req,res) {
-    const header=req.headers.authorizaton
+    const header=req.headers.authorization
     if(!header?.startsWith("Bearer ")) return res.status(401).json({message:"no token"})
     try{
         const decoded=jwt.verify(header.split(" ")[1],process.env.JWT_SECRET)

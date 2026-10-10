@@ -31,7 +31,7 @@ export async function getEventById(req,res) {
         const isRegistrationOpen=new Date()<new Date(event.date)
         const isOwner=req.user && event.organizer._id.toString()===req.user._id
         if(!isOwner) {
-            return res.status({...event.toObject(),isRegistrationOpen})
+            return res.json({...event.toObject(),isRegistrationOpen})
         }
         const attendeesCount=await registrationModel.countDocuments({event:event._id})
 
@@ -67,7 +67,7 @@ export async function postEvent(req,res) {
 }
 
 export async function updateEvent(req,res) {
-    try{const event=eventModel.findById(req.params.id)
+    try{const event=await eventModel.findById(req.params.id)
 
     if(!event){
         return res.status(404).json({message:"Event not found"})
@@ -108,7 +108,7 @@ export async function getRegistrations(req,res) {
             return res.status(403).json({message:"you dont own this event"})
         }
 
-        const regs=await registrationModel.find({event:event.__id}).populate("student","name email")
+        const regs=await registrationModel.find({event:event._id}).populate("student","name email")
         const attendeesCount=regs.map((r)=>({
             id: r._id,
             name: r.student.name,
@@ -125,7 +125,7 @@ export async function getRegistrations(req,res) {
 
 export async function organizerEvent(req,res) {
     try{
-        const events=(await eventModel.find({organizer:req.user.is})).toSorted({date:1})
+        const events=(await eventModel.find({organizer:req.user.id})).toSorted({date:1})
         const withCounts=await Promise.all(
             events.map(async(ev)=>{
                 const attendeesCount=await registrationModel.countDocuments({event:ev._id})
