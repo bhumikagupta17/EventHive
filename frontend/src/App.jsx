@@ -5,7 +5,7 @@ import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
 import { ToastContainer } from './components/common/ToastContainer';
 import { GlobalModals } from './components/modals/GlobalModals';
-
+import { ProtectedRoute } from './routes/ProtectedRoute';
 // Pages from the pages directory
 import {
   BrowsePage,
@@ -47,12 +47,32 @@ export default function App() {
               <Route path="/events/:eventId" element={<EventDetailPage />} />
 
               {/* Screen 3: Organizer Dashboard */}
-              <Route path="/dashboard" element={<DashboardPage />} />
+              <Route
+                path="/dashboard"
+                element={
+                  <ProtectedRoute requireOrganizer>
+                    <DashboardPage />
+                  </ProtectedRoute>
+                }
+              />
 
               {/* Screen 4: Attendee Management Screen */}
-              <Route path="/events/:eventId/attendees" element={<AttendeeManagementPage />} />
-              <Route path="/dashboard/events/:eventId/attendees" element={<AttendeeManagementPage />} />
-
+              <Route
+                  path="/events/:eventId/attendees"
+                  element={
+                    <ProtectedRoute requireOrganizer>
+                      <AttendeeManagementPage />
+                    </ProtectedRoute>
+                  }
+                />
+              <Route
+                path="/dashboard/events/:eventId/attendees"
+                element={
+                  <ProtectedRoute requireOrganizer>
+                    <AttendeeManagementPage />
+                  </ProtectedRoute>
+                }
+              />
               {/* Screen 5: My Registrations Screen */}
               <Route path="/registrations" element={<MyRegistrationsPage />} />
 

@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink, Link, useLocation } from 'react-router-dom';
-import { Calendar, User, LogIn, Sparkles } from 'lucide-react';
+import { Calendar } from 'lucide-react';
 import { useEvents } from '../context/EventContext';
 
 export const Navbar = () => {
@@ -11,13 +11,22 @@ export const Navbar = () => {
   const isDashboardActive = location.pathname.startsWith('/dashboard') || location.pathname.includes('/attendees');
   const isRegistrationsActive = location.pathname === '/registrations';
 
-  const handleLogout = () => {
-    logout();
+  const isOrganizer = user?.role === 'organizer';
+
+  const handleLogout = () => logout();
+
+  // If guest clicks My Registrations → open login modal instead of navigating
+  const handleRegistrationsClick = (e) => {
+    if (!user) {
+      e.preventDefault();
+      openAuthModal('login');
+    }
   };
 
   return (
     <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-sm border-b border-slate-100 transition-all">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between">
+
         {/* Left: Brand Logo */}
         <Link
           to="/"
@@ -30,22 +39,22 @@ export const Navbar = () => {
               <div className="absolute -top-1 -right-1 w-2 h-2 bg-pink-400 rounded-full border border-white" />
             </div>
           </div>
-          <div className="flex items-baseline">
-            <span className="text-xl font-extrabold tracking-tight text-indigo-900 group-hover:text-indigo-600 transition-colors">
-              EventHive
-            </span>
-          </div>
+          <span className="text-xl font-extrabold tracking-tight text-indigo-900 group-hover:text-indigo-600 transition-colors">
+            EventHive
+          </span>
         </Link>
 
         {/* Center: Navigation Links */}
         <nav className="hidden md:flex items-center gap-8 h-full">
+
+          {/* Browse — always visible */}
           <NavLink
             to="/"
             end
             id="nav-tab-browse"
             className={({ isActive }) =>
               `h-full flex items-center text-sm font-semibold relative transition-colors px-1 ${
-                isActive || isBrowseActive && !isDashboardActive
+                isActive || (isBrowseActive && !isDashboardActive)
                   ? 'text-indigo-700'
                   : 'text-slate-600 hover:text-slate-900'
               }`
@@ -57,9 +66,11 @@ export const Navbar = () => {
             )}
           </NavLink>
 
+          {/* My Registrations — always visible; guests get login modal on click */}
           <NavLink
             to="/registrations"
             id="nav-tab-registrations"
+            onClick={handleRegistrationsClick}
             className={({ isActive }) =>
               `h-full flex items-center gap-2 text-sm font-semibold relative transition-colors px-1 ${
                 isActive ? 'text-indigo-700' : 'text-slate-600 hover:text-slate-900'
@@ -67,7 +78,7 @@ export const Navbar = () => {
             }
           >
             <span>My Registrations</span>
-            {registrations.length > 0 && (
+            {user && registrations.length > 0 && (
               <span className="px-1.5 py-0.5 text-xs font-bold bg-indigo-100 text-indigo-700 rounded-full">
                 {registrations.length}
               </span>
@@ -77,20 +88,23 @@ export const Navbar = () => {
             )}
           </NavLink>
 
-          <NavLink
-            to="/dashboard"
-            id="nav-tab-dashboard"
-            className={({ isActive }) =>
-              `h-full flex items-center text-sm font-semibold relative transition-colors px-1 ${
-                isActive || isDashboardActive ? 'text-indigo-700' : 'text-slate-600 hover:text-slate-900'
-              }`
-            }
-          >
-            <span>Dashboard</span>
-            {isDashboardActive && (
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600 rounded-full" />
-            )}
-          </NavLink>
+          {/* Dashboard — organizers only */}
+          {isOrganizer && (
+            <NavLink
+              to="/dashboard"
+              id="nav-tab-dashboard"
+              className={({ isActive }) =>
+                `h-full flex items-center text-sm font-semibold relative transition-colors px-1 ${
+                  isActive || isDashboardActive ? 'text-indigo-700' : 'text-slate-600 hover:text-slate-900'
+                }`
+              }
+            >
+              <span>Dashboard</span>
+              {isDashboardActive && (
+                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600 rounded-full" />
+              )}
+            </NavLink>
+          )}
         </nav>
 
         {/* Right: Auth & Profile */}
@@ -148,8 +162,11 @@ export const Navbar = () => {
         >
           Browse
         </NavLink>
+
+        {/* My Registrations — always visible on mobile too */}
         <NavLink
           to="/registrations"
+          onClick={handleRegistrationsClick}
           className={({ isActive }) =>
             `py-1.5 px-3 rounded-md flex items-center gap-1.5 ${
               isActive ? 'text-indigo-700 bg-indigo-50 font-bold' : 'text-slate-600'
@@ -157,22 +174,26 @@ export const Navbar = () => {
           }
         >
           <span>My Registrations</span>
-          {registrations.length > 0 && (
+          {user && registrations.length > 0 && (
             <span className="w-4 h-4 text-[10px] bg-indigo-600 text-white rounded-full flex items-center justify-center">
               {registrations.length}
             </span>
           )}
         </NavLink>
-        <NavLink
-          to="/dashboard"
-          className={({ isActive }) =>
-            `py-1.5 px-3 rounded-md ${
-              isActive || isDashboardActive ? 'text-indigo-700 bg-indigo-50 font-bold' : 'text-slate-600'
-            }`
-          }
-        >
-          Dashboard
-        </NavLink>
+
+        {/* Dashboard — organizers only */}
+        {isOrganizer && (
+          <NavLink
+            to="/dashboard"
+            className={({ isActive }) =>
+              `py-1.5 px-3 rounded-md ${
+                isActive || isDashboardActive ? 'text-indigo-700 bg-indigo-50 font-bold' : 'text-slate-600'
+              }`
+            }
+          >
+            Dashboard
+          </NavLink>
+        )}
       </div>
     </header>
   );
