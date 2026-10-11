@@ -15,6 +15,19 @@ import {
 } from 'lucide-react';
 import { useEvents } from '../context/EventContext';
 
+// Derive an event's status from its date since the backend has no status field
+function getEventStatus(event) {
+  if (!event.date) return 'UPCOMING';
+  return new Date(event.date) < new Date() ? 'PAST' : 'UPCOMING';
+}
+
+// Try to parse a numeric price value from the price string (e.g. "$15" → 15, "Free" → 0)
+function parsePriceValue(event) {
+  if (event.isFree) return 0;
+  const num = parseFloat(String(event.price).replace(/[^0-9.]/g, ''));
+  return Number.isFinite(num) ? num : 0;
+}
+
 export const DashboardPage = () => {
   const navigate = useNavigate();
   const {
@@ -27,25 +40,24 @@ export const DashboardPage = () => {
 
   const [showAllEvents, setShowAllEvents] = useState(false);
 
-  // Derive metrics
-  const activeEventsCount = events.filter(e => e.status === 'UPCOMING').length + 7;
-  const totalAttendeesSum = events.reduce((sum, e) => sum + (e.attendeesCount || 0), 0) + 1200;
-  const totalRevenueSum = 8240;
+  // Metrics derived from real event data
+  const activeEventsCount = events.filter(e => getEventStatus(e) === 'UPCOMING').length;
+  const totalAttendeesSum = events.reduce((sum, e) => sum + (e.attendeesCount || 0), 0);
+  // Estimated revenue: attendees × ticket price for events the organizer owns (attendeesCount present)
+  const totalRevenueSum = events.reduce((sum, e) => {
+    if (typeof e.attendeesCount !== 'number') return sum;
+    return sum + e.attendeesCount * parsePriceValue(e);
+  }, 0);
 
   const visibleEvents = showAllEvents ? events : events.slice(0, 3);
 
-  const getStatusBadge = (status) => {
+  const getStatusBadge = (event) => {
+    const status = getEventStatus(event);
     switch (status) {
       case 'UPCOMING':
         return (
           <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider bg-purple-100 text-purple-700">
             UPCOMING
-          </span>
-        );
-      case 'DRAFT':
-        return (
-          <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider bg-slate-100 text-slate-600">
-            DRAFT
           </span>
         );
       case 'PAST':
@@ -99,7 +111,7 @@ export const DashboardPage = () => {
           </div>
         </div>
 
-        {/* Card 2: Total Attendees */}
+        {/* Card 2: Total Attendees — only counts events where the backend returned attendeesCount */}
         <div className="bg-white rounded-2xl border border-slate-200/90 p-6 shadow-2xs space-y-3">
           <div className="flex items-center gap-2 text-xs font-semibold text-slate-500">
             <Users className="w-4 h-4 text-slate-400" />
@@ -110,11 +122,11 @@ export const DashboardPage = () => {
           </div>
         </div>
 
-        {/* Card 3: Revenue (30d) */}
+        {/* Card 3: Estimated revenue from owned events with known attendee counts */}
         <div className="bg-white rounded-2xl border border-slate-200/90 p-6 shadow-2xs space-y-3">
           <div className="flex items-center gap-2 text-xs font-semibold text-slate-500">
             <DollarSign className="w-4 h-4 text-slate-400" />
-            <span>Revenue (30d)</span>
+            <span>Est. Revenue</span>
           </div>
           <div className="text-4xl font-extrabold text-slate-900 tracking-tight">
             ${totalRevenueSum.toLocaleString()}
@@ -128,115 +140,114 @@ export const DashboardPage = () => {
           Your Events
         </h2>
 
-        <div className="space-y-4">
-          {visibleEvents.map(event => (
-            <div
-              key={event.id}
-              id={`dashboard-event-row-${event.id}`}
-              className="bg-white rounded-2xl border border-slate-200/90 p-4 sm:p-5 shadow-2xs hover:border-slate-300 transition-all flex flex-col md:flex-row md:items-center justify-between gap-6"
-            >
-              {/* Left Group: Image + Info */}
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 flex-1">
+        {events.length === 0 ? (
+          <div className="bg-white rounded-2xl border border-slate-200/90 p-10 text-center text-slate-500 text-sm">
+            You haven't created any events yet.
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {visibleEvents.map(event => {
+              const status = getEventStatus(event);
+              return (
                 <div
-                  onClick={() => navigate(`/events/${event.id}`)}
-                  className="w-full sm:w-44 h-28 rounded-xl overflow-hidden bg-slate-100 shrink-0 border border-slate-100 cursor-pointer group"
+                  key={event.id}
+                  id={`dashboard-event-row-${event.id}`}
+                  className="bg-white rounded-2xl border border-slate-200/90 p-4 sm:p-5 shadow-2xs hover:border-slate-300 transition-all flex flex-col md:flex-row md:items-center justify-between gap-6"
                 >
-                  <img
-                    src={event.bannerUrl}
-                    alt={event.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    referrerPolicy="no-referrer"
-                  />
-                </div>
-
-                <div className="space-y-2 flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    {getStatusBadge(event.status)}
-                    <span className="text-xs font-medium text-slate-500">
-                      {event.dateDisplay}
-                    </span>
-                  </div>
-
-                  <h3
-                    onClick={() => navigate(`/events/${event.id}`)}
-                    className="text-base sm:text-lg font-bold text-slate-900 truncate hover:text-indigo-600 transition-colors cursor-pointer"
-                  >
-                    {event.title}
-                  </h3>
-
-                  <div className="flex items-center gap-1.5 text-xs text-slate-500">
-                    <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                    <span className="truncate">{event.location}</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Right Group: Attendee Numbers + Action Buttons */}
-              <div className="flex items-center justify-between md:justify-end gap-6 pt-3 md:pt-0 border-t md:border-t-0 md:border-l border-slate-100 md:pl-6 shrink-0">
-                {/* Numbers */}
-                <div className="text-left md:text-right">
-                  <div className="text-sm font-bold text-slate-900">
-                    {event.status === 'DRAFT' ? (
-                      <span>-- / {event.maxCapacity}</span>
-                    ) : (
-                      <span>
-                        {(event.attendeesCount || 0).toLocaleString()} / {(event.maxCapacity || 0).toLocaleString()}
-                      </span>
-                    )}
-                  </div>
-                  <div className="text-xs text-slate-400">
-                    Attendees
-                  </div>
-                </div>
-
-                {/* Primary Row Actions */}
-                <div className="flex items-center gap-2">
-                  {event.status === 'UPCOMING' && (
-                    <button
-                      id={`btn-view-attendees-${event.id}`}
-                      onClick={() => handleViewAttendees(event)}
-                      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-xs transition-colors cursor-pointer"
+                  {/* Left Group: Image + Info */}
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 flex-1">
+                    <div
+                      onClick={() => navigate(`/events/${event.id}`)}
+                      className="w-full sm:w-44 h-28 rounded-xl overflow-hidden bg-slate-100 shrink-0 border border-slate-100 cursor-pointer group"
                     >
-                      <Eye className="w-3.5 h-3.5 text-slate-500" />
-                      <span>View Attendees</span>
-                    </button>
-                  )}
+                      <img
+                        src={event.bannerUrl}
+                        alt={event.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        referrerPolicy="no-referrer"
+                        onError={e => { e.currentTarget.style.display = 'none'; }}
+                      />
+                    </div>
 
-                  {event.status === 'DRAFT' && (
-                    <button
-                      id={`btn-edit-draft-${event.id}`}
-                      onClick={() => openDraftModal(event)}
-                      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-xs transition-colors cursor-pointer"
-                    >
-                      <Edit3 className="w-3.5 h-3.5 text-slate-500" />
-                      <span>Edit Draft</span>
-                    </button>
-                  )}
+                    <div className="space-y-2 flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        {getStatusBadge(event)}
+                        <span className="text-xs font-medium text-slate-500">
+                          {event.dateDisplay}
+                        </span>
+                      </div>
 
-                  {event.status === 'PAST' && (
-                    <button
-                      id={`btn-view-report-${event.id}`}
-                      onClick={() => openReportModal(event)}
-                      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-xs transition-colors cursor-pointer"
-                    >
-                      <FileText className="w-3.5 h-3.5 text-slate-500" />
-                      <span>View Report</span>
-                    </button>
-                  )}
+                      <h3
+                        onClick={() => navigate(`/events/${event.id}`)}
+                        className="text-base sm:text-lg font-bold text-slate-900 truncate hover:text-indigo-600 transition-colors cursor-pointer"
+                      >
+                        {event.title}
+                      </h3>
 
-                  {/* Delete button */}
-                  <button
-                    onClick={() => deleteEvent(event.id)}
-                    title="Delete event"
-                    className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                      <div className="flex items-center gap-1.5 text-xs text-slate-500">
+                        <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                        <span className="truncate">{event.location}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Right Group: Attendee Numbers + Action Buttons */}
+                  <div className="flex items-center justify-between md:justify-end gap-6 pt-3 md:pt-0 border-t md:border-t-0 md:border-l border-slate-100 md:pl-6 shrink-0">
+                    {/* Numbers */}
+                    <div className="text-left md:text-right">
+                      <div className="text-sm font-bold text-slate-900">
+                        {typeof event.attendeesCount === 'number' ? (
+                          <span>
+                            {event.attendeesCount.toLocaleString()} / {(event.maxCapacity || 0).toLocaleString()}
+                          </span>
+                        ) : (
+                          <span>— / {(event.maxCapacity || 0).toLocaleString()}</span>
+                        )}
+                      </div>
+                      <div className="text-xs text-slate-400">
+                        Attendees
+                      </div>
+                    </div>
+
+                    {/* Primary Row Actions */}
+                    <div className="flex items-center gap-2">
+                      {status === 'UPCOMING' && (
+                        <button
+                          id={`btn-view-attendees-${event.id}`}
+                          onClick={() => handleViewAttendees(event)}
+                          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-xs transition-colors cursor-pointer"
+                        >
+                          <Eye className="w-3.5 h-3.5 text-slate-500" />
+                          <span>View Attendees</span>
+                        </button>
+                      )}
+
+                      {status === 'PAST' && (
+                        <button
+                          id={`btn-view-attendees-past-${event.id}`}
+                          onClick={() => handleViewAttendees(event)}
+                          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-xs transition-colors cursor-pointer"
+                        >
+                          <FileText className="w-3.5 h-3.5 text-slate-500" />
+                          <span>View Report</span>
+                        </button>
+                      )}
+
+                      {/* Delete button — confirmation is handled inside deleteEvent */}
+                      <button
+                        onClick={() => deleteEvent(event.id)}
+                        title="Delete event"
+                        className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
-          ))}
-        </div>
+              );
+            })}
+          </div>
+        )}
 
         {/* Load more toggle */}
         {events.length > 3 && (
@@ -245,7 +256,7 @@ export const DashboardPage = () => {
               onClick={() => setShowAllEvents(!showAllEvents)}
               className="inline-flex items-center gap-1.5 text-sm font-semibold text-indigo-600 hover:text-indigo-800 transition-colors cursor-pointer"
             >
-              <span>{showAllEvents ? 'Show less events' : 'Load more events'}</span>
+              <span>{showAllEvents ? 'Show less' : 'Load more events'}</span>
               {showAllEvents ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
             </button>
           </div>
