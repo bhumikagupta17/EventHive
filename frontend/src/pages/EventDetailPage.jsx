@@ -10,7 +10,8 @@ import {
   Compass,
   Download,
   Mail,
-  AlertCircle
+  AlertCircle,
+  Loader2
 } from 'lucide-react';
 import { useEvents } from '../context/EventContext';
 import { Badge } from '../components/common/Badge';
@@ -23,7 +24,6 @@ export const EventDetailPage = () => {
   const {
     events,
     registrations,
-    user,
     toggleBookmark,
     openRegisterModal,
     openMapModal,
@@ -32,10 +32,23 @@ export const EventDetailPage = () => {
   } = useEvents();
 
   const event = events.find(e => e.id === eventId);
-  const isUserRegistered = registrations.some(r => r.eventId === event?.id);
+
+  // Use optional chaining — registrations may still be loading on first render
+  const isUserRegistered = registrations?.some(r => r.eventId === event?.id) ?? false;
+
   // attendeesCount only exists on the event object when the backend recognizes
   // the current user as this event's organizer — everyone else never receives it
   const canSeeAttendeeCount = typeof event?.attendeesCount === 'number';
+
+  // Show a spinner while the events list is still loading (empty array = not yet fetched)
+  if (events.length === 0) {
+    return (
+      <div className="max-w-3xl mx-auto px-4 py-16 text-center space-y-4">
+        <Loader2 className="w-8 h-8 text-indigo-400 animate-spin mx-auto" />
+        <p className="text-sm text-slate-500">Loading event…</p>
+      </div>
+    );
+  }
 
   if (!event) {
     return (
@@ -58,18 +71,27 @@ export const EventDetailPage = () => {
     );
   }
 
-  const isPast = event.status === 'PAST';
+  // Derive past status from the event date — the schema has no "status" field
+  const isPast = event.date ? new Date(event.date) < new Date() : false;
 
   const handleShare = () => {
     if (navigator.clipboard) {
-      navigator.clipboard.writeText(window.location.href);
-      showToast('Event link copied to clipboard!');
+      navigator.clipboard
+        .writeText(window.location.href)
+        .then(() => showToast('Event link copied to clipboard!'))
+        .catch(() => showToast('Could not copy link — try copying the URL manually.'));
+    } else {
+      showToast('Clipboard not available in this browser.');
     }
   };
 
   const handleDownloadCalendar = () => {
-    exportEventToICS(event);
-    showToast('Calendar invite (.ics) downloaded.');
+    try {
+      exportEventToICS(event);
+      showToast('Calendar invite (.ics) downloaded.');
+    } catch {
+      showToast('Failed to generate calendar file.');
+    }
   };
 
   return (
@@ -78,11 +100,11 @@ export const EventDetailPage = () => {
       <div className="flex items-center justify-between">
         <button
           id="btn-back-to-browse"
-          onClick={() => navigate('/')}
+          onClick={() => navigate(-1)}
           className="inline-flex items-center gap-2 text-sm font-bold text-slate-600 hover:text-indigo-600 transition-colors py-1.5 px-3 rounded-xl hover:bg-slate-100 cursor-pointer"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span>Back to Browse</span>
+          <span>Back</span>
         </button>
 
         <div className="flex items-center gap-2">
@@ -133,9 +155,9 @@ export const EventDetailPage = () => {
                 <Badge variant="category" category={event.category}>
                   {event.category}
                 </Badge>
-                {event.status && (
-                  <Badge variant="status" status={event.status}>
-                    {event.status}
+                {isPast && (
+                  <Badge variant="status" status="PAST">
+                    Past
                   </Badge>
                 )}
               </div>
@@ -193,8 +215,8 @@ export const EventDetailPage = () => {
                 <div className="space-y-3 pt-2">
                   <h2 className="text-lg font-bold text-slate-900">What to Expect</h2>
                   <div className="space-y-2.5">
-                    {event.expectations.map((item, idx) => (
-                      <div key={idx} className="flex items-start gap-2.5 text-xs text-slate-600">
+                    {event.expectations.map((item) => (
+                      <div key={item} className="flex items-start gap-2.5 text-xs text-slate-600">
                         <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
                         <span className="leading-snug">{item}</span>
                       </div>
@@ -240,7 +262,8 @@ export const EventDetailPage = () => {
                   <div
                     className="h-full bg-indigo-600 rounded-full transition-all duration-500"
                     style={{
-                      width: `${Math.min(100, Math.round((event.attendeesCount / event.maxCapacity) * 100))}%`
+                      // Guard against division by zero when maxCapacity is 0 or missing
+                      width: `${Math.min(100, Math.round((event.attendeesCount / (event.maxCapacity || 1)) * 100))}%`
                     }}
                   />
                 </div>
