@@ -25,11 +25,13 @@ export const AttendeeManagementPage = () => {
     fetchAttendees
   } = useEvents();
 
-  const event = events.find(e => e.id === eventId) || events[0];
+  // Do not fall back to events[0] — an unknown eventId should reach the not-found state
+  const event = events.find(e => e.id === eventId);
 
+  // Fetch attendees for this event when the eventId changes
   React.useEffect(() => {
     if (eventId) fetchAttendees(eventId);
-  }, [eventId]);
+  }, [eventId, fetchAttendees]);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
@@ -40,10 +42,9 @@ export const AttendeeManagementPage = () => {
     return event?.attendeesList || [];
   }, [event]);
 
-  // Filter attendees
+  // Filter attendees by search query and status
   const filteredAttendees = useMemo(() => {
     return attendees.filter(att => {
-      // Search
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
         const matchName = att.name?.toLowerCase().includes(q);
@@ -51,7 +52,6 @@ export const AttendeeManagementPage = () => {
         if (!matchName && !matchEmail) return false;
       }
 
-      // Status
       if (statusFilter !== 'ALL' && att.status !== statusFilter) {
         return false;
       }
@@ -81,38 +81,41 @@ export const AttendeeManagementPage = () => {
     );
   }
 
-  // Derived counts
-  const totalRegisteredBase = 1248;
-  const totalRegistered = totalRegisteredBase + (attendees.length - 4);
-  const localCheckedInCount = attendees.filter(a => a.status === 'Checked In').length;
-  const checkedInBase = 890 + localCheckedInCount;
-  const checkedInPercent = Math.round((checkedInBase / (totalRegistered || 1)) * 100);
+  // Derive real counts from the fetched attendees list
+  // attendeesCount (from backend) is the authoritative total when available;
+  // fall back to the local list length while data is still loading
+  const totalRegistered = event.attendeesCount ?? attendees.length;
+  const checkedInCount = attendees.filter(a => a.status === 'Checked In').length;
+  const checkedInPercent = Math.round((checkedInCount / (totalRegistered || 1)) * 100);
 
-  // Pagination
-  const totalPages = Math.ceil(filteredAttendees.length / pageSize) || 1;
-  const paginatedAttendees = filteredAttendees.slice(
-    (currentPage - 1) * pageSize,
-    currentPage * pageSize
-  );
+  // Pagination — clamp page to valid range so the display stays consistent
+  const totalPages = Math.max(1, Math.ceil(filteredAttendees.length / pageSize));
+  const safePage = Math.min(currentPage, totalPages);
+  const pageStart = (safePage - 1) * pageSize;
+  const paginatedAttendees = filteredAttendees.slice(pageStart, pageStart + pageSize);
 
-  // Export CSV handler
+  // Export the current attendees list as a CSV file using a Blob
+  // so field values with commas or quotes are handled correctly
   const handleExportCSV = () => {
     const headers = ['Attendee Name', 'Email Address', 'Ticket Type', 'Status', 'Registered At'];
+    const escape = val => `"${String(val ?? '').replace(/"/g, '""')}"`;
     const rows = attendees.map(a => [
-      `"${a.name}"`,
-      `"${a.email}"`,
-      `"${a.ticketType}"`,
-      `"${a.status}"`,
-      `"${a.registeredAt}"`
+      escape(a.name),
+      escape(a.email),
+      escape(a.ticketType),
+      escape(a.status),
+      escape(a.registeredAt)
     ]);
-    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
-    const encodedUri = encodeURI(csvContent);
+    const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `${(event.title || 'event').replace(/[^a-zA-Z0-9]/g, '_')}_Attendees.csv`);
+    link.href = url;
+    link.download = `${(event.title || 'event').replace(/[^a-zA-Z0-9]/g, '_')}_Attendees.csv`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    URL.revokeObjectURL(url);
     showToast('Attendee roster exported as CSV.');
   };
 
@@ -198,7 +201,7 @@ export const AttendeeManagementPage = () => {
           </span>
           <div className="flex items-baseline gap-2 mt-1">
             <span className="text-3xl font-extrabold text-slate-900">
-              {checkedInBase.toLocaleString()}
+              {checkedInCount.toLocaleString()}
             </span>
             <span className="text-sm font-semibold text-slate-500">
               / {checkedInPercent}%
@@ -348,24 +351,28 @@ export const AttendeeManagementPage = () => {
         {/* Table Footer: Pagination */}
         <div className="px-6 py-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500 bg-white">
           <div>
-            Showing <span className="font-semibold text-slate-800">1 to {paginatedAttendees.length}</span> of{' '}
-            <span className="font-semibold text-slate-800">{totalRegistered.toLocaleString()}</span>
+            Showing{' '}
+            <span className="font-semibold text-slate-800">
+              {filteredAttendees.length === 0 ? 0 : pageStart + 1}–{Math.min(pageStart + pageSize, filteredAttendees.length)}
+            </span>{' '}
+            of{' '}
+            <span className="font-semibold text-slate-800">{filteredAttendees.length.toLocaleString()}</span>
           </div>
 
           <div className="flex items-center gap-2">
             <button
               onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-              disabled={currentPage === 1}
+              disabled={safePage === 1}
               className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
             <span className="font-medium text-slate-700">
-              Page {currentPage} of {totalPages}
+              Page {safePage} of {totalPages}
             </span>
             <button
               onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-              disabled={currentPage === totalPages}
+              disabled={safePage === totalPages}
               className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
             >
               <ChevronRight className="w-4 h-4" />

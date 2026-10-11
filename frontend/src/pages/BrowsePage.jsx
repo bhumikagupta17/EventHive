@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Search, Sparkles, X, Bookmark, ArrowUpDown } from 'lucide-react';
 import { useEvents } from '../context/EventContext';
@@ -16,6 +16,15 @@ export const BrowsePage = () => {
   const [showBookmarksOnly, setShowBookmarksOnly] = useState(false);
   const [sortBy, setSortBy] = useState('date');
 
+  // Inject the Dancing Script font into <head> so @import is not needed inside a body <style>
+  useEffect(() => {
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = 'https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap';
+    document.head.appendChild(link);
+    return () => { document.head.removeChild(link); };
+  }, []);
+
   // Filter & Sort
   const filteredEvents = useMemo(() => {
     return events
@@ -25,8 +34,9 @@ export const BrowsePage = () => {
         if (selectedPriceFilter === 'FREE' && !event.isFree) return false;
         if (selectedPriceFilter === 'PAID' && event.isFree) return false;
         if (searchQuery.trim()) {
-          const q = searchQuery.toLowerCase();
-          const matchesTitle = event.title.toLowerCase().includes(q);
+          // Trim the query before comparing so leading/trailing spaces are ignored
+          const q = searchQuery.trim().toLowerCase();
+          const matchesTitle = event.title?.toLowerCase().includes(q);
           const matchesDesc = event.description?.toLowerCase().includes(q);
           const matchesLoc = event.location?.toLowerCase().includes(q);
           const matchesOrg = event.organizer?.name?.toLowerCase().includes(q);
@@ -36,7 +46,8 @@ export const BrowsePage = () => {
       })
       .sort((a, b) => {
         if (sortBy === 'price') return (a.priceValue || 0) - (b.priceValue || 0);
-        return (a.startDate || '').localeCompare(b.startDate || '');
+        // Sort by event.date (ISO string) — the schema has no startDate field
+        return (a.date || '').localeCompare(b.date || '');
       });
   }, [events, searchQuery, selectedCategory, selectedPriceFilter, showBookmarksOnly, sortBy]);
 
@@ -58,11 +69,7 @@ export const BrowsePage = () => {
 
   return (
     <>
-      {/* Dancing Script font for the cursive headline */}
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap');
-        .font-dancing { font-family: 'Dancing Script', cursive; }
-      `}</style>
+      <style>{`.font-dancing { font-family: 'Dancing Script', cursive; }`}</style>
 
       {/* ── Hero Section ───────────────────────────────────────────────── */}
       <section className="w-full bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 py-16 px-4 sm:px-6 lg:px-8">
