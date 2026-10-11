@@ -5,8 +5,18 @@ import { Badge } from '../common/Badge';
 export const EventCard = ({
   event,
   onSelect,
-  onToggleBookmark
+  onToggleBookmark,
 }) => {
+  // Safe single-character initials — fall back to '?' if the field is missing
+  const titleInitial = event.title?.[0] ?? '?';
+  const categoryInitial = event.category?.[0] ?? '?';
+
+  const handleBannerError = (e) => {
+    // Replace broken image with an indigo gradient placeholder so the card still looks good
+    e.currentTarget.style.display = 'none';
+    e.currentTarget.parentElement.classList.add('banner-placeholder');
+  };
+
   return (
     <div
       id={`event-card-${event.id}`}
@@ -14,13 +24,14 @@ export const EventCard = ({
       className="group bg-white rounded-2xl border border-slate-200/90 overflow-hidden hover:shadow-lg hover:border-slate-300 transition-all duration-200 flex flex-col cursor-pointer"
     >
       {/* Card Image Container */}
-      <div className="relative h-48 w-full overflow-hidden bg-slate-100">
+      <div className="relative h-48 w-full overflow-hidden bg-slate-100 [&.banner-placeholder]:bg-gradient-to-br [&.banner-placeholder]:from-indigo-400 [&.banner-placeholder]:to-purple-500">
         <img
           src={event.bannerUrl}
           alt={event.title}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
           referrerPolicy="no-referrer"
           loading="lazy"
+          onError={handleBannerError}
         />
 
         {/* Category Tag Badge */}
@@ -33,7 +44,10 @@ export const EventCard = ({
         {/* Bookmark Button */}
         <button
           id={`bookmark-${event.id}`}
-          onClick={(e) => onToggleBookmark(event.id, e)}
+          onClick={(e) => {
+            // Guard against the prop being omitted by a parent
+            if (onToggleBookmark) onToggleBookmark(event.id, e);
+          }}
           title={event.bookmarked ? 'Remove bookmark' : 'Bookmark event'}
           className={`absolute top-3 right-3 w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-xs transition-colors cursor-pointer ${
             event.bookmarked
@@ -70,10 +84,10 @@ export const EventCard = ({
           <div className="flex items-center gap-2">
             <div className="flex -space-x-2">
               <div className="w-6 h-6 rounded-full bg-indigo-200 border-2 border-white flex items-center justify-center text-[10px] font-bold text-indigo-700">
-                {event.title.charAt(0)}
+                {titleInitial}
               </div>
               <div className="w-6 h-6 rounded-full bg-purple-200 border-2 border-white flex items-center justify-center text-[10px] font-bold text-purple-700">
-                {event.category.charAt(0)}
+                {categoryInitial}
               </div>
             </div>
             {/* attendeesCount is only present when the viewer organizes this event —
