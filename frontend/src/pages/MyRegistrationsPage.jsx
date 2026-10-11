@@ -13,31 +13,61 @@ import {
 } from 'lucide-react';
 import { useEvents } from '../context/EventContext';
 
+// Format a date string to ICS UTC timestamp (YYYYMMDDTHHmmssZ)
+// Accepts an ISO string (from the backend) or a human-readable date string.
+// Returns today's date as a fallback so the required DTSTART field is always present.
+function formatICSDate(dateStr) {
+  const d = dateStr ? new Date(dateStr) : null;
+  if (d && !isNaN(d.getTime())) {
+    return d.toISOString().replace(/[-:.]/g, '').slice(0, 15) + 'Z';
+  }
+  // Fallback: use midnight UTC today
+  return new Date().toISOString().replace(/[-:.]/g, '').slice(0, 15) + 'Z';
+}
+
 export const MyRegistrationsPage = () => {
   const navigate = useNavigate();
   const { registrations, cancelRegistration, showToast } = useEvents();
 
   const handleDownloadPass = (reg) => {
-    // Generate calendar file (.ics)
-    const icsData = `BEGIN:VCALENDAR
-VERSION:2.0
-PRODID:-//EventHive//Campus Events//EN
-BEGIN:VEVENT
-SUMMARY:${reg.eventTitle}
-LOCATION:${reg.eventLocation}
-DESCRIPTION:Your registration code: ${reg.ticketCode} for ${reg.eventTitle}
-STATUS:CONFIRMED
-END:VEVENT
-END:VCALENDAR`;
+    // reg.date is the ISO date from the backend; reg.eventDate is the display string.
+    // Both are tried so calendar apps receive a valid DTSTART/DTEND.
+    const dtStart = formatICSDate(reg.date || reg.eventDate);
+    const dtStamp = formatICSDate(new Date().toISOString());
+
+    const icsData = [
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'PRODID:-//EventHive//Campus Events//EN',
+      'BEGIN:VEVENT',
+      `DTSTAMP:${dtStamp}`,
+      `DTSTART:${dtStart}`,
+      `DTEND:${dtStart}`,
+      `SUMMARY:${reg.eventTitle}`,
+      `LOCATION:${reg.eventLocation || ''}`,
+      `DESCRIPTION:Registration code: ${reg.ticketCode} — ${reg.eventTitle}`,
+      'STATUS:CONFIRMED',
+      'END:VEVENT',
+      'END:VCALENDAR',
+    ].join('\r\n');
 
     const blob = new Blob([icsData], { type: 'text/calendar;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
-    link.href = window.URL.createObjectURL(blob);
-    link.setAttribute('download', `${(reg.eventTitle || 'event').replace(/[^a-zA-Z0-9]/g, '_')}.ics`);
+    link.href = url;
+    link.download = `${(reg.eventTitle || 'event').replace(/[^a-zA-Z0-9]/g, '_')}.ics`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    // Release the object URL to avoid a memory leak
+    URL.revokeObjectURL(url);
     showToast('Calendar invite (.ics) downloaded.');
+  };
+
+  // Ask for confirmation before permanently removing a registration
+  const handleCancelRegistration = (regId) => {
+    if (!window.confirm('Cancel this registration? This cannot be undone.')) return;
+    cancelRegistration(regId);
   };
 
   return (
@@ -153,7 +183,7 @@ END:VCALENDAR`;
                       <ExternalLink className="w-4 h-4" />
                     </Link>
                     <button
-                      onClick={() => cancelRegistration(reg.id)}
+                      onClick={() => handleCancelRegistration(reg.id)}
                       title="Cancel registration"
                       className="p-2.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl border border-slate-200 hover:border-rose-100 transition-colors cursor-pointer"
                     >
