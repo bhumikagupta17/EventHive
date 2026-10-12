@@ -4,10 +4,11 @@ import { X, Send, CheckCircle2, Mail, Building2 } from 'lucide-react';
 export const ContactModal = ({
   isOpen,
   onClose,
-  organizer
+  organizer,
+  currentUserEmail
 }) => {
   const [subject, setSubject] = useState('Inquiry regarding campus event');
-  const [senderEmail, setSenderEmail] = useState('student@university.edu');
+  const [senderEmail, setSenderEmail] = useState(currentUserEmail || '');
   const [message, setMessage] = useState('');
   const [isSent, setIsSent] = useState(false);
 
@@ -18,6 +19,9 @@ export const ContactModal = ({
     setIsSent(true);
     setTimeout(() => {
       setIsSent(false);
+      setMessage('');
+      setSubject('Inquiry regarding campus event');
+      setSenderEmail(currentUserEmail || '');
       onClose();
     }, 1800);
   };

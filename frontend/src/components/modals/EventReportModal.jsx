@@ -32,79 +32,15 @@ export const EventReportModal = ({
         {/* Body */}
         <div className="p-6 space-y-6">
           {/* Top 3 Stats Grid */}
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 gap-3">
             <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100 text-center">
               <span className="text-[10px] font-bold uppercase text-slate-400 block">
                 Total Registered
               </span>
               <span className="text-2xl font-extrabold text-slate-900 mt-1 block">
-                {event.attendeesCount.toLocaleString()}
+                {(event.attendeesCount ?? 0).toLocaleString()}
               </span>
             </div>
-
-            <div className="bg-indigo-50/70 rounded-2xl p-4 border border-indigo-100/60 text-center">
-              <span className="text-[10px] font-bold uppercase text-indigo-600 block">
-                Actual Turnout
-              </span>
-              <span className="text-2xl font-extrabold text-indigo-900 mt-1 block">
-                94.8%
-              </span>
-            </div>
-
-            <div className="bg-emerald-50/70 rounded-2xl p-4 border border-emerald-100/60 text-center">
-              <span className="text-[10px] font-bold uppercase text-emerald-600 block">
-                Satisfaction
-              </span>
-              <span className="text-2xl font-extrabold text-emerald-900 mt-1 block">
-                4.9 / 5.0
-              </span>
-            </div>
-          </div>
-
-          {/* Department Breakdown Bar */}
-          <div className="space-y-3">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700">
-              Attendee Demographic Breakdown
-            </h4>
-            <div className="space-y-2 text-xs">
-              <div>
-                <div className="flex justify-between font-semibold text-slate-700 mb-1">
-                  <span>Engineering & Computer Science</span>
-                  <span>48%</span>
-                </div>
-                <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-indigo-600 rounded-full" style={{ width: '48%' }} />
-                </div>
-              </div>
-
-              <div>
-                <div className="flex justify-between font-semibold text-slate-700 mb-1">
-                  <span>Business & Marketing</span>
-                  <span>27%</span>
-                </div>
-                <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-purple-600 rounded-full" style={{ width: '27%' }} />
-                </div>
-              </div>
-
-              <div>
-                <div className="flex justify-between font-semibold text-slate-700 mb-1">
-                  <span>Arts, Humanities & Science</span>
-                  <span>25%</span>
-                </div>
-                <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-pink-500 rounded-full" style={{ width: '25%' }} />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Event Highlights & Notes */}
-          <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100 text-xs text-slate-600 space-y-2">
-            <p className="font-bold text-slate-800">Executive Summary</p>
-            <p>
-              Capacity was exceeded by 32 attendees with smooth badge check-in queuing under 30 seconds average wait time. All 80 recruiter tables reported high candidate engagement.
-            </p>
           </div>
 
           <div className="pt-2 flex justify-end">

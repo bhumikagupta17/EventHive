@@ -24,6 +24,10 @@ export const AddGuestModal = ({
       registeredDate: new Date().toISOString().split('T')[0]
     };
     onAddGuest(newGuest);
+    setName('');
+    setEmail('');
+    setTicketType('VIP');
+    setStatus('Pending');
     onClose();
   };
 
