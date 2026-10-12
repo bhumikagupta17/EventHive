@@ -28,8 +28,19 @@ export const CreateEventModal = ({
     if (!file) return;
     const reader = new FileReader();
     reader.onloadend = () => {
-      setBannerUrl(reader.result);
-      setBannerPreview(reader.result);
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const maxWidth = 700;
+        const scale = Math.min(maxWidth / img.width, 1);
+        canvas.width = img.width * scale;
+        canvas.height = img.height * scale;
+        canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+        const compressed = canvas.toDataURL('image/jpeg', 0.65);
+        setBannerUrl(compressed);
+        setBannerPreview(compressed);
+      };
+      img.src = reader.result;
     };
     reader.readAsDataURL(file);
   };
