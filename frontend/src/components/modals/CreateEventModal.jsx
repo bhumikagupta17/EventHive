@@ -40,6 +40,11 @@ export const CreateEventModal = ({
       title,
       category,
       date: eventDate ? new Date(eventDate).toISOString() : new Date().toISOString(),
+      dateDisplay: eventDate
+        ? new Date(eventDate).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }) +
+          ' • ' +
+          new Date(eventDate).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+        : '',
       location: location || 'Campus Main Hall',
       price: price || 'Free',
       attendeesCount: 1,
