@@ -46,11 +46,7 @@ export const CreateEventModal = ({
       maxCapacity: parseInt(maxCapacity) || 200,
       bannerUrl: bannerUrl || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=1200&q=80',
       description: description || 'Exciting campus gathering with talks, networking and food.',
-      organizer: {
-        name: organizerName || 'Campus Student Association',
-        contactEmail: organizerEmail || 'club@university.edu',
-        verified: true
-      },
+      
       bookmarked: false,
     };
 
