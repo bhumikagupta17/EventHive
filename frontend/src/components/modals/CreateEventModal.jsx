@@ -52,7 +52,9 @@ export const CreateEventModal = ({
       bannerUrl: bannerUrl || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=1200&q=80',
       description: description || 'Exciting campus gathering with talks, networking and food.',
       
-      bookmarked: false,
+      organizerName: organizerName || '',
+      organizerEmail: organizerEmail || '',
+      bookmarked: false
     };
 
     onCreateEvent(newEvent);

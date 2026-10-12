@@ -38,8 +38,9 @@ export function useEventsState({showToast}){
         bannerUrl: newEvent.bannerUrl,
         price: newEvent.price,
         isFree: newEvent.price === 'Free',
-        organizerName: newEvent.organizer?.name,
-        organizerEmail: newEvent.organizer?.contactEmail,
+        maxCapacity: newEvent.maxCapacity,
+        organizerName: newEvent.organizerName,
+        organizerEmail: newEvent.organizerEmail,
       })
       await refreshEvents();
       showToast(`Created new campus event "${newEvent.title}"!`)
