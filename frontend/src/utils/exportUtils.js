@@ -4,13 +4,13 @@ export function exportEventToICS(event) {
     .split('.')[0]+'Z'
 
     let start=new Date()
-    if(event.startDate){
-        const parsed=new date(event.startDate)
-        if(!NaN(parsed.getTime())) start=parsed
+    if(event.date || event.startDate){
+        const parsed=new Date(event.date || event.startDate)
+        if(!isNaN(parsed.getTime())) start=parsed
     }
     start.setHours(17,30,0,0)
 
-    const end=new date(start.getTime()+2*60*60*1000)
+    const end=new Date(start.getTime()+2*60*60*1000)
     const icsLines = [
         'BEGIN:VCALENDAR',
         'VERSION:2.0',

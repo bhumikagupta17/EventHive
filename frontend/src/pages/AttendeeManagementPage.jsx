@@ -26,7 +26,7 @@ export const AttendeeManagementPage = () => {
   } = useEvents();
 
   // Do not fall back to events[0] — an unknown eventId should reach the not-found state
-  const event = events.find(e => e.id === eventId);
+  const event = events.find(e => e._id === eventId || e.id === eventId);
 
   // Fetch attendees for this event when the eventId changes
   React.useEffect(() => {
@@ -104,7 +104,7 @@ export const AttendeeManagementPage = () => {
       escape(a.email),
       escape(a.ticketType),
       escape(a.status),
-      escape(a.registeredAt)
+      escape(a.registeredDate || a.registeredAta.registeredAt)
     ]);
     const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -164,7 +164,7 @@ export const AttendeeManagementPage = () => {
         <div className="flex items-center gap-3 shrink-0">
           <button
             id="btn-add-guest"
-            onClick={() => openAddGuestModal(event.id)}
+            onClick={() => openAddGuestModal(event._id || event.id)}
             className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-xs transition-colors shadow-2xs cursor-pointer"
           >
             <UserPlus className="w-4 h-4 text-slate-500" />
@@ -274,14 +274,14 @@ export const AttendeeManagementPage = () => {
                   const isCheckedIn = att.status === 'Checked In';
 
                   return (
-                    <tr key={att.id} className="hover:bg-slate-50/70 transition-colors">
+                    <tr key={att._id || att.id} className="hover:bg-slate-50/70 transition-colors">
                       {/* Name & Avatar */}
                       <td className="py-4 px-6">
                         <div className="flex items-center gap-3">
                           <div
-                            className={`w-8 h-8 rounded-full ${att.avatarBgColor} text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-2xs`}
+                            className="w-8 h-8 rounded-full bg-indigo-500 text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-2xs"
                           >
-                            {att.avatarInitials}
+                            {att.name?.split(' ').filter(Boolean).map(n => n[0]).toUpperCase().join('').slice(0, 2) || '?'}
                           </div>
                           <span className="font-bold text-slate-900">
                             {att.name}
@@ -324,7 +324,7 @@ export const AttendeeManagementPage = () => {
                       <td className="py-4 px-6 text-right">
                         {isCheckedIn ? (
                           <button
-                            onClick={() => toggleCheckIn(event.id, att.id)}
+                            onClick={() => toggleCheckIn(event._id || event.id, att._id || att.id)}
                             title="Click to toggle check-in status"
                             className="px-4 py-1.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-400 text-xs font-semibold cursor-pointer hover:bg-slate-100 hover:text-slate-600 transition-colors"
                           >

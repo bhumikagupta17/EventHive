@@ -275,7 +275,7 @@ export const BrowsePage = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredEvents.map(event => (
               <EventCard
-                key={event.id}
+                key={event._id || event.id}
                 event={event}
                 onSelect={handleSelectEvent}
                 onToggleBookmark={(id, e) => toggleBookmark(id, e)}

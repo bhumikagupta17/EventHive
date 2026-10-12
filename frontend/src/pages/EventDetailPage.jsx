@@ -31,8 +31,8 @@ export const EventDetailPage = () => {
     showToast
   } = useEvents();
 
-  const event = events.find(e => e.id === eventId);
-  const isUserRegistered = registrations.some(r => r.eventId === event?.id);
+  const event = events.find(e => e._id === eventId || e.id === eventId);
+  const isUserRegistered = registrations.some(r => r.eventId === (event?._id || event?.id));
   // attendeesCount only exists on the event object when the backend recognizes
   // the current user as this event's organizer — everyone else never receives it
   const canSeeAttendeeCount = typeof event?.attendeesCount === 'number';
@@ -58,7 +58,7 @@ export const EventDetailPage = () => {
     );
   }
 
-  const isPast = event.status === 'PAST';
+  const isPast = event.date ? new Date(event.date) < new Date() : false;
 
   const handleShare = () => {
     if (navigator.clipboard) {
@@ -102,7 +102,7 @@ export const EventDetailPage = () => {
             <Share2 className="w-4 h-4" />
           </button>
           <button
-            onClick={e => toggleBookmark(event.id, e)}
+            onClick={e => toggleBookmark(event._id || event.id, e)}
             title="Bookmark"
             className={`p-2.5 rounded-xl border transition-colors cursor-pointer ${
               event.bookmarked
@@ -133,11 +133,9 @@ export const EventDetailPage = () => {
                 <Badge variant="category" category={event.category}>
                   {event.category}
                 </Badge>
-                {event.status && (
-                  <Badge variant="status" status={event.status}>
-                    {event.status}
-                  </Badge>
-                )}
+                <Badge variant="status" status={isPast ? 'PAST' : 'UPCOMING'}>
+                  {isPast ? 'PAST' : 'UPCOMING'}
+                </Badge>
               </div>
             </div>
 

@@ -33,7 +33,7 @@ export function useEventsState({showToast}){
         description: newEvent.description,
         category: newEvent.category,
         location: newEvent.location,
-        date: newEvent.startDate || new Date().toISOString(),
+        date: newEvent.date || (newEvent.dateDisplay ? new Date(newEvent.dateDisplay).toISOString() : new Date().toISOString()),
         dateDisplay: newEvent.dateDisplay,
         bannerUrl: newEvent.bannerUrl,
         price: newEvent.price,
@@ -49,7 +49,7 @@ export function useEventsState({showToast}){
   }
     const updateEvent=async(updatedEvent)=>{
         try {
-            await api.put(`/events/${updatedEvent.id}`,updatedEvent)
+            await api.put(`/events/${updatedEvent._id || updatedEvent.id}`,updatedEvent)
             await refreshEvents()
             showToast(`Updated event "${updatedEvent.title}"!`)
         } catch (err) {

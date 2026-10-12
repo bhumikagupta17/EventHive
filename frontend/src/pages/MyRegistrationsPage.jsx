@@ -105,7 +105,7 @@ export const MyRegistrationsPage = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {registrations.map(reg => (
             <div
-              key={reg.id}
+              key={reg._id || reg.id}
               className="bg-white rounded-3xl border border-slate-200/90 overflow-hidden shadow-xs hover:shadow-md transition-all flex flex-col justify-between"
             >
               {/* Event Top Banner */}
@@ -183,7 +183,7 @@ export const MyRegistrationsPage = () => {
                       <ExternalLink className="w-4 h-4" />
                     </Link>
                     <button
-                      onClick={() => handleCancelRegistration(reg.id)}
+                      onClick={() => handleCancelRegistration(reg._id || reg.id)}
                       title="Cancel registration"
                       className="p-2.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl border border-slate-200 hover:border-rose-100 transition-colors cursor-pointer"
                     >

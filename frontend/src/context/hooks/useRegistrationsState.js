@@ -18,6 +18,7 @@ export function useRegistrationsState({user,showToast,refreshEvents}){
                 ticketType: r.ticketType,
                 status: r.status,
                 registeredAt: r.createdAt,
+                ticketCode: r.ticketCode || r._id,
             })))
         } catch (error) {
             showToast(error.response?.data?.message || 'Failed to fetch registrations')

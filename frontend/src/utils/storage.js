@@ -1,5 +1,5 @@
 export const storage={
-    get(key,value){
+    get(key,defaultValue){
         try{
             const item=localStorage.getItem(key)
             if(!item) return defaultValue
@@ -10,7 +10,7 @@ export const storage={
     },
     set(key,value){
         try{
-            localStorage.setItem(key.JSON.stringify(value))
+            localStorage.setItem(key,JSON.stringify(value))
         }catch(err){
             console.warn(`[storage] Error saving key ${key}: `,err)
         }

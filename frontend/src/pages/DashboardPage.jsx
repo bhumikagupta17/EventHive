@@ -7,7 +7,6 @@ import {
   DollarSign,
   MapPin,
   Eye,
-  Edit3,
   FileText,
   Trash2,
   ChevronDown,
@@ -72,7 +71,7 @@ export const DashboardPage = () => {
   };
 
   const handleViewAttendees = (event) => {
-    navigate(`/events/${event.id}/attendees`);
+    navigate(`/events/${event._id || event.id}/attendees`);
   };
 
   return (
@@ -150,8 +149,8 @@ export const DashboardPage = () => {
               const status = getEventStatus(event);
               return (
                 <div
-                  key={event.id}
-                  id={`dashboard-event-row-${event.id}`}
+                  key={event._id || event.id}
+                  id={`dashboard-event-row-${event._id || event.id}`}
                   className="bg-white rounded-2xl border border-slate-200/90 p-4 sm:p-5 shadow-2xs hover:border-slate-300 transition-all flex flex-col md:flex-row md:items-center justify-between gap-6"
                 >
                   {/* Left Group: Image + Info */}
@@ -178,7 +177,7 @@ export const DashboardPage = () => {
                       </div>
 
                       <h3
-                        onClick={() => navigate(`/events/${event.id}`)}
+                        onClick={() => navigate(`/events/${event._id || event.id}`)}
                         className="text-base sm:text-lg font-bold text-slate-900 truncate hover:text-indigo-600 transition-colors cursor-pointer"
                       >
                         {event.title}
@@ -213,7 +212,7 @@ export const DashboardPage = () => {
                     <div className="flex items-center gap-2">
                       {status === 'UPCOMING' && (
                         <button
-                          id={`btn-view-attendees-${event.id}`}
+                          id={`btn-view-attendees-${event._id || event.id}`}
                           onClick={() => handleViewAttendees(event)}
                           className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-xs transition-colors cursor-pointer"
                         >
@@ -222,10 +221,10 @@ export const DashboardPage = () => {
                         </button>
                       )}
 
-                      {status === 'PAST' && (
+                    {status === 'PAST' && (
                         <button
-                          id={`btn-view-attendees-past-${event.id}`}
-                          onClick={() => handleViewAttendees(event)}
+                          id={`btn-view-attendees-past-${event._id || event.id}`}
+                          onClick={() => openReportModal(event)}
                           className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-xs transition-colors cursor-pointer"
                         >
                           <FileText className="w-3.5 h-3.5 text-slate-500" />
@@ -235,7 +234,7 @@ export const DashboardPage = () => {
 
                       {/* Delete button — confirmation is handled inside deleteEvent */}
                       <button
-                        onClick={() => deleteEvent(event.id)}
+                        onClick={() => deleteEvent(event._id || event.id)}
                         title="Delete event"
                         className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
                       >
