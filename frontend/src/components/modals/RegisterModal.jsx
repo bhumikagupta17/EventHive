@@ -21,10 +21,11 @@ export const RegisterModal = ({
     setSubmitting(true);
     try {
       await onConfirmRegistration({
-        eventId: event.id,
+        eventId: event._id || event.id,
         eventTitle: event.title,
         ticketType
       });
+      setTicketType('General');
       onClose();
     } finally {
       setSubmitting(false);

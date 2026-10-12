@@ -7,14 +7,14 @@ export const EditDraftModal = ({
   event,
   onSaveDraft
 }) => {
-  if (!isOpen || !event) return null;
-
   const [title, setTitle] = useState(event.title);
   const [dateDisplay, setDateDisplay] = useState(event.dateDisplay === 'TBD' ? '2024-12-05' : event.dateDisplay);
   const [location, setLocation] = useState(event.location);
   const [description, setDescription] = useState(event.description);
   const [maxCapacity, setMaxCapacity] = useState(event.maxCapacity.toString());
 
+  if (!isOpen || !event) return null;
+  
   const handlePublish = (e) => {
     e.preventDefault();
     const updated = {

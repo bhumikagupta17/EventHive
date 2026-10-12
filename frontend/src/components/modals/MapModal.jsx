@@ -48,10 +48,6 @@ export const MapModal = ({
               <p className="font-bold text-sm text-slate-100">{locationName}</p>
               <p className="text-xs text-indigo-200">{detailName || 'Zone 3 • Central Campus Quad'}</p>
             </div>
-
-            <div className="absolute bottom-3 left-3 bg-slate-800/90 backdrop-blur-xs px-2.5 py-1 rounded-lg text-[10px] font-semibold text-slate-300 border border-slate-700">
-              GPS: 37.7749° N, 122.4194° W
-            </div>
           </div>
 
           {/* Transportation / Parking Guide */}

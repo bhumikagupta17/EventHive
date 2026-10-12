@@ -66,6 +66,7 @@ export const GlobalModals = () => {
         isOpen={createEventModalOpen}
         onClose={closeCreateEventModal}
         onCreateEvent={createEvent}
+        currentUser={user}
       />
 
       {/* Add Guest Modal */}
@@ -90,6 +91,7 @@ export const GlobalModals = () => {
         isOpen={Boolean(contactOrganizerData)}
         onClose={closeContactModal}
         organizer={contactOrganizerData}
+        currentUserEmail={user?.email}
       />
 
       {/* Event Report Modal */}

@@ -19,6 +19,10 @@ export const AuthModal = ({
     e.preventDefault();
     const role = affiliation === 'Student Club Organizer' ? 'organizer' : 'student';
     onSubmit({ mode, name, email, password, role });
+    setName('');
+    setEmail('');
+    setPassword('');
+    setAffiliation('Undergraduate Student');
   };
 
   return (
@@ -135,7 +139,7 @@ export const AuthModal = ({
               type="submit"
               className="w-full py-3 rounded-xl bg-indigo-700 hover:bg-indigo-800 text-white font-bold text-sm shadow-sm shadow-indigo-200 transition-all mt-2 cursor-pointer"
             >
-              {mode === 'login' ? 'Sign In to EventHive' : 'Create Student Account'}
+              {mode === 'login' ? 'Sign In to EventHive' : affiliation === 'Student Club Organizer' ? 'Create Organizer Account' : 'Create Student Account'}
             </button>
           </form>
         </div>

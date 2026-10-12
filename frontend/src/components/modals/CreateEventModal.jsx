@@ -7,7 +7,8 @@ const OTHER_BUILDING = 'Other (specify below)';
 export const CreateEventModal = ({
   isOpen,
   onClose,
-  onCreateEvent
+  onCreateEvent,
+  currentUser
 }) => {
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState('Academic & Tech');
@@ -17,8 +18,8 @@ export const CreateEventModal = ({
   const [maxCapacity, setMaxCapacity] = useState('150');
   const [price, setPrice] = useState('Free');
   const [description, setDescription] = useState('');
-  const [organizerName, setOrganizerName] = useState('Campus Student Union');
-  const [organizerEmail, setOrganizerEmail] = useState('events@campus.edu');
+  const [organizerName, setOrganizerName] = useState(currentUser?.name || '');
+  const [organizerEmail, setOrganizerEmail] = useState(currentUser?.email || '');
   const [bannerUrl, setBannerUrl] = useState('https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=1200&q=80');
 
   // Resolved location: the picked campus building, or whatever the organizer typed if they chose "Other"
@@ -33,7 +34,6 @@ export const CreateEventModal = ({
       title,
       category,
       dateDisplay: dateDisplay || 'Nov 30, 2024 • 6:00 PM',
-      startDate: '2024-11-30',
       location: location || 'Campus Main Hall',
       price: price || 'Free',
       attendeesCount: 1,
@@ -45,7 +45,6 @@ export const CreateEventModal = ({
         contactEmail: organizerEmail || 'club@university.edu',
         verified: true
       },
-      status: 'UPCOMING',
       bookmarked: false,
       attendeesList: [
         {
