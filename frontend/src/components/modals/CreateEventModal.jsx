@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState ,useEffect} from 'react';
 import { X, Sparkles, Upload } from 'lucide-react';
 import { CAMPUS_BUILDINGS } from '../../constants/categories';
 
@@ -12,7 +12,7 @@ export const CreateEventModal = ({
 }) => {
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState('Academic & Tech');
-  const [dateDisplay, setDateDisplay] = useState('');
+    const [eventDate, setEventDate] = useState('');
   const [buildingChoice, setBuildingChoice] = useState(CAMPUS_BUILDINGS[0]);
   const [customLocation, setCustomLocation] = useState('');
   const [maxCapacity, setMaxCapacity] = useState('150');
@@ -24,16 +24,22 @@ export const CreateEventModal = ({
 
   // Resolved location: the picked campus building, or whatever the organizer typed if they chose "Other"
   const location = buildingChoice === OTHER_BUILDING ? customLocation : buildingChoice;
+  // Sync organizer fields whenever the modal opens or the logged-in user changes
+  useEffect(() => {
+    if (isOpen) {
+      setOrganizerName(currentUser?.name || '');
+      setOrganizerEmail(currentUser?.email || '');
+    }
+  }, [isOpen, currentUser]);
 
   if (!isOpen) return null;
 
   const handleSubmit = (e) => {
     e.preventDefault();
     const newEvent = {
-      id: `evt-${Date.now()}`,
       title,
       category,
-      dateDisplay: dateDisplay || 'Nov 30, 2024 • 6:00 PM',
+      date: eventDate ? new Date(eventDate).toISOString() : new Date().toISOString(),
       location: location || 'Campus Main Hall',
       price: price || 'Free',
       attendeesCount: 1,
@@ -46,16 +52,6 @@ export const CreateEventModal = ({
         verified: true
       },
       bookmarked: false,
-      attendeesList: [
-        {
-          id: 'att-creator-1',
-          name: organizerName,
-          email: organizerEmail,
-          registeredDate: new Date().toISOString().split('T')[0],
-          ticketType: 'VIP',
-          status: 'Checked In'
-        }
-      ]
     };
 
     onCreateEvent(newEvent);
@@ -123,11 +119,10 @@ export const CreateEventModal = ({
                 Date & Time *
               </label>
               <input
-                type="text"
+                type="datetime-local"
                 required
-                placeholder="e.g. Fri, Dec 6 • 5:00 PM"
-                value={dateDisplay}
-                onChange={(e) => setDateDisplay(e.target.value)}
+                value={eventDate}
+                onChange={(e) => setEventDate(e.target.value)}
                 className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none"
               />
             </div>
