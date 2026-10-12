@@ -12,7 +12,7 @@ export const CreateEventModal = ({
 }) => {
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState('Academic & Tech');
-    const [eventDate, setEventDate] = useState('');
+  const [eventDate, setEventDate] = useState('');
   const [buildingChoice, setBuildingChoice] = useState(CAMPUS_BUILDINGS[0]);
   const [customLocation, setCustomLocation] = useState('');
   const [maxCapacity, setMaxCapacity] = useState('150');
@@ -20,8 +20,19 @@ export const CreateEventModal = ({
   const [description, setDescription] = useState('');
   const [organizerName, setOrganizerName] = useState(currentUser?.name || '');
   const [organizerEmail, setOrganizerEmail] = useState(currentUser?.email || '');
-  const [bannerUrl, setBannerUrl] = useState('https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=1200&q=80');
+  const [bannerUrl, setBannerUrl] = useState('');
+  const [bannerPreview, setBannerPreview] = useState('');
 
+  const handleBannerUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setBannerUrl(reader.result);
+      setBannerPreview(reader.result);
+    };
+    reader.readAsDataURL(file);
+  };
   // Resolved location: the picked campus building, or whatever the organizer typed if they chose "Other"
   const location = buildingChoice === OTHER_BUILDING ? customLocation : buildingChoice;
   // Sync organizer fields whenever the modal opens or the logged-in user changes
@@ -49,7 +60,7 @@ export const CreateEventModal = ({
       price: price || 'Free',
       attendeesCount: 1,
       maxCapacity: parseInt(maxCapacity) || 200,
-      bannerUrl: bannerUrl || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=1200&q=80',
+      bannerUrl: bannerUrl || '',
       description: description || 'Exciting campus gathering with talks, networking and food.',
       
       organizerName: organizerName || '',
@@ -175,14 +186,20 @@ export const CreateEventModal = ({
 
           <div className="space-y-1.5">
             <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">
-              Banner Image URL
+              Banner Image
             </label>
-            <input
-              type="url"
-              value={bannerUrl}
-              onChange={(e) => setBannerUrl(e.target.value)}
-              className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-            />
+            <label className="flex flex-col items-center justify-center w-full h-32 rounded-xl border-2 border-dashed border-slate-200 bg-slate-50 cursor-pointer hover:bg-slate-100 transition-colors overflow-hidden relative">
+              {bannerPreview ? (
+                <img src={bannerPreview} alt="Banner preview" className="absolute inset-0 w-full h-full object-cover rounded-xl" />
+              ) : (
+                <div className="flex flex-col items-center gap-1 text-slate-400">
+                  <Upload className="w-6 h-6" />
+                  <span className="text-xs font-medium">Click to upload banner image</span>
+                  <span className="text-xs">PNG, JPG, WEBP — if skipped, a gradient will be used</span>
+                </div>
+              )}
+              <input type="file" accept="image/*" className="hidden" onChange={handleBannerUpload} />
+            </label>
           </div>
 
           <div className="space-y-1.5">

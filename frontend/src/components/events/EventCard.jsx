@@ -15,13 +15,26 @@ export const EventCard = ({
     >
       {/* Card Image Container */}
       <div className="relative h-48 w-full overflow-hidden bg-slate-100">
-        <img
-          src={event.bannerUrl}
-          alt={event.title}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-          referrerPolicy="no-referrer"
-          loading="lazy"
-        />
+        {event.bannerUrl ? (
+          <img
+            src={event.bannerUrl}
+            alt={event.title}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            referrerPolicy="no-referrer"
+            loading="lazy"
+            onError={(e) => { e.target.style.display = 'none'; e.target.parentElement.classList.add('bg-gradient-to-br', 'from-indigo-500', 'to-purple-700'); }}
+          />
+        ) : (
+          <div className={`w-full h-full flex items-end p-3 bg-gradient-to-br ${
+            event.category === 'Academic & Tech' ? 'from-blue-500 to-indigo-700' :
+            event.category === 'Career & Networking' ? 'from-emerald-500 to-teal-700' :
+            event.category === 'Social & Cultural' ? 'from-pink-500 to-rose-600' :
+            event.category === 'Arts & Music' ? 'from-purple-500 to-violet-700' :
+            event.category === 'Sports & Fitness' ? 'from-orange-500 to-red-600' :
+            event.category === 'Workshops & Seminars' ? 'from-amber-500 to-orange-600' :
+            'from-indigo-500 to-purple-700'
+          }`} />
+        )}
 
         {/* Category Tag Badge */}
         <div className="absolute top-3 left-3">
