@@ -9,8 +9,8 @@ export const EventCard = ({
 }) => {
   return (
     <div
-      id={`event-card-${event.id}`}
-      onClick={() => onSelect(event.id)}
+      id={`event-card-${event._id || event.id}`}
+      onClick={() => onSelect(event._id || event.id)}
       className="group bg-white rounded-2xl border border-slate-200/90 overflow-hidden hover:shadow-lg hover:border-slate-300 transition-all duration-200 flex flex-col cursor-pointer"
     >
       {/* Card Image Container */}
@@ -32,8 +32,8 @@ export const EventCard = ({
 
         {/* Bookmark Button */}
         <button
-          id={`bookmark-${event.id}`}
-          onClick={(e) => onToggleBookmark(event.id, e)}
+          id={`bookmark-${event._id || event.id}}`}
+          onClick={(e) => onToggleBookmark(event._id || event.id, e)}
           title={event.bookmarked ? 'Remove bookmark' : 'Bookmark event'}
           className={`absolute top-3 right-3 w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-xs transition-colors cursor-pointer ${
             event.bookmarked
@@ -70,10 +70,10 @@ export const EventCard = ({
           <div className="flex items-center gap-2">
             <div className="flex -space-x-2">
               <div className="w-6 h-6 rounded-full bg-indigo-200 border-2 border-white flex items-center justify-center text-[10px] font-bold text-indigo-700">
-                {event.title.charAt(0)}
+                {event.title?.charAt(0) || '?'}
               </div>
               <div className="w-6 h-6 rounded-full bg-purple-200 border-2 border-white flex items-center justify-center text-[10px] font-bold text-purple-700">
-                {event.category.charAt(0)}
+                {event.category?.charAt(0) || '?'}
               </div>
             </div>
             {/* attendeesCount is only present when the viewer organizes this event —

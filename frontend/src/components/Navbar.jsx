@@ -116,7 +116,7 @@ export const Navbar = () => {
                 <span className="text-xs text-slate-500">{user.email}</span>
               </div>
               <div className="w-9 h-9 rounded-full bg-indigo-100 border border-indigo-200 text-indigo-700 font-bold text-sm flex items-center justify-center shadow-xs">
-                {user.name.split(' ').map(n => n[0]).join('')}
+                {user.name.split(' ').filter(Boolean).map(n => n[0]).join('')}
               </div>
               <button
                 id="btn-logout"

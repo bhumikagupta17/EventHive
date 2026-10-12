@@ -1,4 +1,4 @@
-import React, { Children } from "react";
+import React from "react";
 import {getCategoryBadgeStyle,getTicketBadgeStyle} from "../../utils/formatters.js"
 
 export const Badge=({
